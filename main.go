@@ -9,13 +9,24 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	qrcode "github.com/skip2/go-qrcode"
 	"golang.design/x/clipboard"
+
+	_ "embed"
 )
 
 func checkErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func createQR(data string) (png []byte) {
+
+	png, err := qrcode.Encode(data, qrcode.Medium, 500)
+	checkErr(err)
+
+	return png
 }
 
 func getClipboard() string {
@@ -44,6 +55,13 @@ func updateQr(data string, qrImgData *[]byte, qrImg *canvas.Image) {
 	qrImg.Refresh()
 }
 
+//go:embed static/icon.png
+var icon []byte
+var resourceIconPng = &fyne.StaticResource{
+	StaticName:    "icon.png",
+	StaticContent: icon,
+}
+
 func main() {
 	err := clipboard.Init()
 	checkErr(err)
@@ -51,9 +69,9 @@ func main() {
 	// Create the Application
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Instant QR")
-	icon, err := fyne.LoadResourceFromPath("icon.png")
-	checkErr(err)
-	myWindow.SetIcon(icon)
+	// icon, err := fyne.LoadResourceFromPath("icon.png")
+	// checkErr(err)
+	myWindow.SetIcon(resourceIconPng)
 
 	// User Entry Box
 	userEntry := widget.NewEntry()
