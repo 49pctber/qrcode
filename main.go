@@ -15,6 +15,8 @@ import (
 	_ "embed"
 )
 
+const default_str string = "https://bryanredd.com"
+
 func checkErr(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -30,7 +32,11 @@ func createQR(data string) (png []byte) {
 }
 
 func getClipboard() string {
-	return string(clipboard.Read(clipboard.FmtText))
+	data := clipboard.Read(clipboard.FmtText)
+	if data == nil {
+		return default_str
+	}
+	return string(data)
 }
 
 func saveQr(qrImgData []byte, win fyne.Window) {
@@ -48,7 +54,7 @@ func saveQr(qrImgData []byte, win fyne.Window) {
 
 func updateQr(data string, qrImgData *[]byte, qrImg *canvas.Image) {
 	if data == "" {
-		data = "https://bryanredd.com"
+		data = default_str
 	}
 	*qrImgData = createQR(data)
 	qrImg.Resource = fyne.NewStaticResource("QR Code", *qrImgData)
@@ -69,8 +75,6 @@ func main() {
 	// Create the Application
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Instant QR")
-	// icon, err := fyne.LoadResourceFromPath("icon.png")
-	// checkErr(err)
 	myWindow.SetIcon(resourceIconPng)
 
 	// User Entry Box
@@ -81,7 +85,7 @@ func main() {
 	var qrImgData = createQR(userEntry.Text)
 	var resource = fyne.NewStaticResource("QR Code", qrImgData)
 	qrImg := canvas.NewImageFromResource(resource)
-	qrImg.SetMinSize(fyne.Size{Width: 500, Height: 500}) // by default size is 0, 0
+	qrImg.SetMinSize(fyne.Size{Width: 500, Height: 500})
 
 	userEntry.OnChanged = func(data string) {
 		updateQr(data, &qrImgData, qrImg)
